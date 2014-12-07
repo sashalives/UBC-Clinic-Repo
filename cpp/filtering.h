@@ -25,7 +25,7 @@ private:
 	int _numberOfFilters;
 	int _interestingNumber;
 
-	hash<string> str_hash;
+	std::hash<std::string> str_hash;
 
 	const char *_fileName;
 	ifstream _inputFile;

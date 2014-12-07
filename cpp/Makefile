@@ -1,13 +1,13 @@
 all: filter
 
-filter: filtering_MAIN.o filtering.o
-	g++ filtering_MAIN.o filtering.o -o filter
+filter: filtering.o filtering_MAIN.o
+	g++ filtering.o filtering_MAIN.o -o filter
 
-filtering_MAIN.o: filtering_MAIN.cpp
-	g++ -c filtering_MAIN.cpp
+filtering_MAIN.o: filtering.h filtering_MAIN.cpp
+	g++ -std=c++11 filtering_MAIN.cpp -c
 
-filtering.o: filtering.cpp
-	g++ -c filtering.cpp
+filtering.o: filtering.h filtering.cpp
+	g++ -std=c++11 filtering.cpp filtering.h -c
 
 clean:
-	rm -rf *o filter
+	rm -rf *.o filter
