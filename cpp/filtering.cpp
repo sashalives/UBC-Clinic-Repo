@@ -89,7 +89,7 @@ void Filter::filter()
 			inFileName = "tempFile" + to_string(i-1);
 
 		if (i==(_numberOfFilters-1))
-			tmpName = "filteredFinal.txt";
+			tmpName = "remove_loops_" + _fileName;
 		else
 			tmpName = "tempFile" + to_string(i);
 
