@@ -64,6 +64,7 @@ void Filter::buildDB()
 	_inputFile.close();
 
 	cout << "Finished building database" << endl;
+	cout << "File contains " << to_string(_db.size()) << " unique structures." << endl;
 
 	filter();
 }
