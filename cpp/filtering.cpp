@@ -88,9 +88,10 @@ void Filter::filter()
 		else
 			inFileName = "tempFile" + to_string(i-1);
 
-		if (i==(_numberOfFilters-1))
-			tmpName = "remove_loops_" + _fileName;
-		else
+		if (i==(_numberOfFilters-1)) {
+			string finalPrefix = "remove_loops_";
+			tmpName = finalPrefix.append(_fileName);
+		} else
 			tmpName = "tempFile" + to_string(i);
 
 		inputFile.open(inFileName, fstream::in);
