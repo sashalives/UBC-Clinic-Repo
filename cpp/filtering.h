@@ -31,7 +31,7 @@ private:
 	ifstream _inputFile;
 	string _header;
 
-	std::map<size_t, std::pair<string, int> > _db;
+	std::map<size_t, pair<string, int> > _db;
 	map<size_t, pair<string, int> >::iterator it;
 
 	std::vector<int> _energyDB;

@@ -75,13 +75,14 @@ void Filter::filter()
 
 	vector<string> structuresList(_numberOfFilters); 
 	mostVisitedStructures(structuresList);
+	int listSize = structuresList.size();
 
 	ifstream inputFile;
 	fstream tempFile;
 	string inFileName;
 	string tmpName;
 
-	for (int i=0; i<_numberOfFilters; ++i) {
+	for (int i=0; i<listSize; ++i) {
 
 		if (i==0)
 			inFileName = _fileName;
@@ -197,8 +198,17 @@ void Filter::mostVisitedStructures(vector<string> &list)
 	vector<pair<size_t, pair<string, int> > > mapcopy(_db.begin(), _db.end());
 	sort(mapcopy.begin(), mapcopy.end(), countSorter());
 
-	for (int i=0; i < _numberOfFilters; ++i) {
-		list[i] = mapcopy[i].second.first;
+	vector<pair<size_t, pair<string, int> > >::iterator listIterator = mapcopy.begin();
+
+	// for (int i=0; i < _numberOfFilters; ++i) {
+	// 	list[i] = mapcopy[i].second.first;
+	// }
+
+	while (listIterator->second.second >= _numberOfFilters)
+	{
+		list.push_back(listIterator->second.first);
+
+		++listIterator;
 	}
 
 }
