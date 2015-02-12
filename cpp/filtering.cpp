@@ -7,10 +7,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
+#include <sstream>
 
 #include "filtering.h"
 
 using namespace std;
+
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
 
 Filter::Filter(const char * fileName)
 	:_inputFile(fileName), _fileName(fileName)
@@ -33,35 +43,56 @@ void Filter::runFiltering(int numberOfFilters, int interestingNumber)
 
 void Filter::buildDB()
 {
-	string line;
-
+	std::string line;
 	size_t hashedValue = 0;
 
-	// strip header
+	cout << "Building database" << endl;
+
+	// strip all the crap from the beginning of the file
 	getline(_inputFile, line);
-	_header = line+"\n";
+	while (line.find("Count") != std::string::npos) {
+		getline(_inputFile, line);
+	}
+
+	_header = line;
+
 	getline(_inputFile, line);
-	_header.append(line+"\n");
+
+	cout << "initial structure is " << _header << endl;
 
 	while (getline(_inputFile, line)) {
 
-		hashedValue = str_hash(line);
+		std::vector<std::string> parsedStrand;
 
-		// change this to hashed value later!
+		split(line, ',', parsedStrand);
+
+		std::vector<std::string> energyStatement;
+		split(parsedStrand[2], ' ', energyStatement);
+
+		string strandStructure = parsedStrand[0];
+
+		float energy;
+		if (energyStatement.size() == 4)
+			energy = stof(energyStatement[2]);
+		else
+			energy = stof(energyStatement[3]);
+
+		Structure strandObject = Structure(strandStructure, energy);
+
+		hashedValue = str_hash(parsedStrand[0]);
+
 		it = _db.find(hashedValue);
 
 		if (it == _db.end()) {
 			// key is not in the database
-			_db.insert(make_pair(hashedValue, make_pair(line, 1)));
+			_db.insert(make_pair(hashedValue, make_pair(strandObject, 1)));
 
 		} else {
 			// key is in the database
-			_db[hashedValue].second++;
+			it->second.second++;
 		}
 
 	}
-
-	_inputFile.close();
 
 	cout << "Finished building database" << endl;
 	cout << "File contains " << to_string(_db.size()) << " unique structures." << endl;
@@ -73,9 +104,11 @@ void Filter::filter()
 {
 	cout << "Filtering..." << endl;
 
-	vector<string> structuresList(_numberOfFilters); 
+	vector<Structure> structuresList; 
 	mostVisitedStructures(structuresList);
 	int listSize = structuresList.size();
+
+	cout << "filtering " << to_string(listSize) << " structures" << endl;
 
 	ifstream inputFile;
 	fstream tempFile;
@@ -89,7 +122,7 @@ void Filter::filter()
 		else
 			inFileName = "tempFile" + to_string(i-1);
 
-		if (i==(_numberOfFilters-1)) {
+		if (i==(listSize-1)) {
 			string finalPrefix = "remove_loops_";
 			tmpName = finalPrefix.append(_fileName);
 		} else
@@ -98,7 +131,7 @@ void Filter::filter()
 		inputFile.open(inFileName, fstream::in);
 		tempFile.open(tmpName, fstream::out);
 
-		string mostVisited = structuresList[i];
+		string mostVisited = structuresList[i].structure;
 
 		cout << "Filtering for " << mostVisited << endl;
 		it = _db.find(str_hash(mostVisited));
@@ -106,19 +139,33 @@ void Filter::filter()
 
 		if (inputFile.is_open() && tempFile.is_open()) 
 		{
-			string line;
+			std::string line;
 
 			vector<string> loop;
 
-			// strip header again
 			getline(inputFile, line);
+
+			if (i==0) {
+				// strip long header
+				while (line.find("Count") != std::string::npos) {
+					getline(inputFile, line);
+				}
+			}
+
+			// write nucleotide sequence to tempfile
 			tempFile << line << endl;
+
+			// strip initial structure header
 			getline(inputFile, line);
-			tempFile << line << endl;
 
 			while (getline(inputFile, line))
 			{
-				if (line == mostVisited)
+
+				std::vector<std::string> parsedStrand;
+				split(line, ',', parsedStrand);	
+				string strandStructure = parsedStrand[0];
+
+				if (strandStructure == mostVisited)
 				{
 					if (loop.size() > 0) 
 					{
@@ -134,7 +181,7 @@ void Filter::filter()
 						for (int i = 0; i < loopLength; ++i) 
 						{
 							if (hasUniqueStructure) {
-								tempFile << loop[i] << endl;
+								tempFile << _db[str_hash(loop[i])].first.csvFromStructure() << endl;
 							} else {
 								if (_db[str_hash(loop[i])].second == 1) {
 									_db.erase(str_hash(loop[i]));
@@ -146,14 +193,14 @@ void Filter::filter()
 
 						loop.clear();
 					} else {
-						loop.push_back(line);
+						loop.push_back(strandStructure);
 					}
 				} else {
 					if (loop.size() > 0)
 					{
-						loop.push_back(line);
+						loop.push_back(strandStructure);
 					} else {
-						tempFile << line << endl;
+						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << endl;
 					}
 				}
 			}
@@ -163,7 +210,7 @@ void Filter::filter()
 				int loopLength = loop.size();
 				for (int i = 0; i < loopLength; ++i)
 				{
-					tempFile << loop[i] << "\n";
+					tempFile << _db[str_hash(loop[i])].first.csvFromStructure() << "\n";
 				}
 			}
 		} else {
@@ -186,19 +233,19 @@ size_t Filter::hash(string structure)
 
 struct countSorter 
 {
-	inline bool operator() (const pair<size_t, pair<string, int> > a, const pair<size_t, pair<string, int> > b)
+	inline bool operator() (const pair<size_t, pair<Structure, int> > a, const pair<size_t, pair<Structure, int> > b)
 	{
 		return a.second.second > b.second.second;
 	} 
 };
 
-void Filter::mostVisitedStructures(vector<string> &list)
+void Filter::mostVisitedStructures(vector<Structure> &list)
 {
 
-	vector<pair<size_t, pair<string, int> > > mapcopy(_db.begin(), _db.end());
+	vector<pair<size_t, pair<Structure, int> > > mapcopy(_db.begin(), _db.end());
 	sort(mapcopy.begin(), mapcopy.end(), countSorter());
 
-	vector<pair<size_t, pair<string, int> > >::iterator listIterator = mapcopy.begin();
+	vector<pair<size_t, pair<Structure, int> > >::iterator listIterator = mapcopy.begin();
 
 	// for (int i=0; i < _numberOfFilters; ++i) {
 	// 	list[i] = mapcopy[i].second.first;

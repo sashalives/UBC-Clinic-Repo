@@ -12,7 +12,14 @@ class Structure
 {
 public:
 
-	Structure(string );
+	Structure(string const structure, float const energy);
+
+	Structure(){};
+
+	string csvFromStructure();
+
+	string structure;
+	float energy;
 
 private:
 

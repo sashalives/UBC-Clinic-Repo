@@ -10,6 +10,7 @@
 #include <functional>
 #include <iostream>
 #include <fstream>
+#include "strand.h"
 
 using namespace std;
 
@@ -31,16 +32,14 @@ private:
 	ifstream _inputFile;
 	string _header;
 
-	std::map<size_t, pair<string, int> > _db;
-	map<size_t, pair<string, int> >::iterator it;
-
-	std::vector<int> _energyDB;
-
+	std::map<size_t, pair<Structure, int> > _db;
+	map<size_t, pair<Structure, int> >::iterator it;
+	
 	void buildDB();
 	void filter();
 
 	size_t hash(string structure);
-	void mostVisitedStructures(vector<string> &list);
+	void mostVisitedStructures(vector<Structure> &list);
 	// bool countSort(pair<string, pair<string, int> > a, pair<string, pair<string, int> > b);
 	void fileCopy(string src, string dst);
 
