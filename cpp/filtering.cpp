@@ -59,6 +59,7 @@ void Filter::buildDB()
 	getline(_inputFile, line);
 
 	cout << "initial structure is " << _header << endl;
+	_initialStructure = line;
 
 	while (getline(_inputFile, line)) {
 
@@ -158,6 +159,8 @@ void Filter::filter()
 			// strip initial structure header
 			getline(inputFile, line);
 
+			tempFile << line << endl;
+
 			while (getline(inputFile, line))
 			{
 
@@ -223,6 +226,66 @@ void Filter::filter()
 		if (i > 0) remove(inFileName.c_str());
 	}
 
+	convertToJSON();
+}
+
+void Filter::convertToJSON()
+{
+	string finalPrefix = "remove_loops_";
+	string finalFile = finalPrefix.append(_fileName);
+	string jsonFile = finalFile;
+	jsonFile.erase(jsonFile.size()-4,string::npos).append(".json");
+
+	ifstream finalFileStream;
+	fstream jsonFileStream;
+
+	finalFileStream.open(finalFile, fstream::in);
+	jsonFileStream.open(jsonFile, fstream::out);
+
+	if (finalFileStream.is_open() && jsonFileStream.is_open()) {
+		string line;
+		getline(finalFileStream, line);
+
+		jsonFileStream << "{\n";
+
+		string structureString = "\t\"structure\": \"";
+		structureString.append(line);
+		structureString.append("\",\n");
+		jsonFileStream << structureString;
+
+		getline(finalFileStream, line);
+
+		string initialStructureString = "\t\"initial_structure\": \"";
+		initialStructureString.append(line);
+		initialStructureString.append("\",\n");
+		jsonFileStream << initialStructureString;
+
+		jsonFileStream << "\t\"states\": [\n";
+
+		while (getline(finalFileStream, line)) {
+			string strandObject = "\t\t{\n";
+			strandObject.append("\t\t\t\"structure\": ");
+
+			std::vector<std::string> v;
+			split(line, ',', v);
+
+			strandObject.append("\"");
+			strandObject.append(v[0]);
+			strandObject.append("\"");
+			strandObject.append(",\n");
+			strandObject.append("\t\t\t\"energy\": ");
+			strandObject.append(v[1]);
+			strandObject.append("\n\t\t},\n");
+
+			jsonFileStream << strandObject;
+		}
+
+		jsonFileStream << "\t]\n}";
+
+
+	} else {
+		cout << "Error opening files in JSON conversion" << endl;
+	}
 }
 
 size_t Filter::hash(string structure)

@@ -31,12 +31,15 @@ private:
 	const char *_fileName;
 	ifstream _inputFile;
 	string _header;
+	string _initialStructure;
 
 	std::map<size_t, pair<Structure, int> > _db;
 	map<size_t, pair<Structure, int> >::iterator it;
 	
 	void buildDB();
 	void filter();
+
+	void convertToJSON();
 
 	size_t hash(string structure);
 	void mostVisitedStructures(vector<Structure> &list);

@@ -20,7 +20,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	char * filename = argv[1];
-	int numberOfFilters = 1;
+	int numberOfFilters = 2;
 	int interestingNumber = 1;
 
 	if (argc == 4) {
