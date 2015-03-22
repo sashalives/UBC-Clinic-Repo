@@ -194,6 +194,8 @@ void Filter::filter()
 							}
 						}
 
+						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << endl;
+
 						loop.clear();
 					} else {
 						loop.push_back(strandStructure);
