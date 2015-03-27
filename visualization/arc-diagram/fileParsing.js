@@ -3,7 +3,7 @@
 
 var width  = 960;           // width of svg image
 var height = 400;           // height of svg image
-var eWidth = 1000;
+var eWidth = 1300;
 var eHeight = 50;
 var gWidth = 1200;
 var gHeight = 400;
@@ -16,6 +16,7 @@ var currentLine = 0; // Starting index for line to access in file
 var fileContents;
 var fileFiltered;
 var energy;
+var dots;
 
 function parseStructure(text) {
 
@@ -36,13 +37,15 @@ function parseStructure(text) {
         .append("svg")  //svg:g???
         .attr("id","barchart")
         .attr("width",eWidth)
-        .attr("height", eHeight);
+        .attr("height", eHeight)
+        .style("padding-left","20px");
 
     var axisContainer = d3.select("body")
         .append("svg")  //svg:g???
         .attr("id","axis")
         .attr("width",eWidth)
-        .attr("height", 50);
+        .attr("height", 50)
+        .style("padding-left","20px");
     var graphContainer = d3.select("body")
         .append("svg")  //svg:g???
         .attr("id","graph")
@@ -108,11 +111,12 @@ function energyPlot(currentEnergy) {
 
     var x = d3.scale.linear()
     .domain([min,max])
-    .range([0, width]);
+    .range([10, width]);
 
     var xAxis = d3.svg.axis()
     .scale(x)
-    .orient("bottom");
+    .orient("bottom")
+    .ticks(20);
 
 
     var bars = d3.select("#barchart").selectAll(".bar")
@@ -127,22 +131,8 @@ function energyPlot(currentEnergy) {
         .attr ("fill","#800")
         .attr("x", function(d, i) { return x(Math.min(0, d)); })
         .attr("width", function(d, i) { return Math.abs(x(d) - x(0)); })
-        .attr("height", 50);
-
-    // trying to update in here    
-    /* d3.select("p")
-    .on("click", function() {
-        currentLine += 1;
-        energy = [(fileFiltered[currentLine].split(',')[1])];
-        console.log(energy)
-        bars.data(energy)
-            .append("rect")
-            .attr("class","bar")
-            .attr ("fill","#800")
-            .attr("x", function(d, i) { return x(Math.min(0, d)); })
-            .attr("width", function(d, i) { return Math.abs(x(d) - x(0)); })
-            .attr("height", 50); 
-    }); */
+        .attr("height", 50)
+        .text(function(d) { return d; });
 
     // exit selection
     bars.exit().remove();
@@ -160,6 +150,11 @@ function updateData() {
     currentLine += 1;
     energy = [(fileFiltered[currentLine].split(',')[1])];
     energyPlot(energy);
+    dots.style("fill","black")
+        .attr("r",2)
+    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
 
 }
 
@@ -224,8 +219,10 @@ function drawGraph() {
         .attr("class", "y axis")
         .call(yAxis);
 
-    var dots = graph.selectAll('.point')
-        .data(data)
+
+    dots = graph.selectAll('.point')
+        .data(data);
+
 
     dots.enter().append("svg:circle")
         .attr("class", 'point')
@@ -233,11 +230,26 @@ function drawGraph() {
         .attr("cx", function(d, i) { return x(i)})
         .attr("cy", function(d,i) { return y(d)});
 
-    dots.on('mouseover', function() {d3.select(this).attr('r', 8)})
-        .on('mouseout',  function() {d3.select(this).attr('r', 2)});
+
+    var tooltip = d3.select("body")
+        //.data(data)
+        .append("div")
+        //.style("position", "absolute")
+        .style("z-index", "10")
+        .style('padding-bottom', '20px')
+        .style("padding-left","20px");
+        //.style("visibility", "hidden")
+        //.text(" ");
+
+
+    dots.on('mouseover', function(d,i) {d3.select(this).attr("r", 5).style("fill", "blue"); return tooltip.style("visibility", "visible").text("  Energy: " + d);})
+        //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
+        .on('mouseout',  function() {d3.select(this).attr("r", 2).style("fill", "black"); return tooltip.style("visibility", "hidden");})
+        //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
         //.on('click', (d, i) -> console.log d, i) **/
 
-    dots.filter(function(d,i) { return i == currentLine })        // <== This line
+            
+    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
             .style("fill", "green")
             .attr("r", 5);
 
