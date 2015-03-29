@@ -9,13 +9,56 @@
 
 <!-- CSS Style //-->
 <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,900|Source+Code+Pro:300" rel="stylesheet" type="text/css">
-<link href="style.css" rel="stylesheet" type="text/css">
+<link href="/style.css" rel="stylesheet" type="text/css">
+<link href="/bootstrap.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
+
+<div id="option">
+	<!-- <p> click to update </p> -->
+
+   <input name="updateButton" 
+                 type="button" 
+                value="Update" 
+                onclick="updateData()" />
+</div>
+
+<div class="content-wrapper">
+
+	<div id="saddle-points" class='col-md-3'>
+
+	</div>
+
+	<div id="number-of-uniques" class='col-md-3'>
+
+	</div>
+
+	<div id="number-of-repeats" class='col-md-3'>
+
+	</div>
+
+	<div id="arc-diagram" class='col-md-6'>
+
+	</div>
+
+	<div id="energy-bar-graph" class='col-md-6'>
+	</div>
+
+	<div id="energy-plot-graph" class='col-md-12'>
+	</div>
+
+	<div id="">
+	</div>
+
+	<div id="">
+	</div>
+</div>
+
+</body>
+
 <script>
 d3.text("remove_loops_testFromPaperOutput1.txt", parseStructure);
-
 </script>
-</body>
+
 </html>

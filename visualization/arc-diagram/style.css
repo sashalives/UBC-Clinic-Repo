@@ -13,15 +13,6 @@ b {
     stroke-width: 1px;
 }
 
-#tooltip {
-    font-size: 10pt;
-    font-weight: 900;
-
-    fill: #000000;
-    stroke: #ffffff;
-    stroke-width: 0.25px;
-}
-
 .node {
     stroke: #ffffff;
     stroke-weight: 1px;
@@ -29,13 +20,13 @@ b {
 
 .link {
     fill: none;
-    stroke: #888888;
-    stroke-weight: 1px;
-    stroke-opacity: 0.5;
+    stroke: #000000;
+    stroke-weight: 10px;
+    stroke-opacity: .5;
 }
 
 .highlight {
     stroke: red;
-    stroke-weight: 4px;
+    stroke-weight: 10px;
     stroke-opacity: 1.0;
 }

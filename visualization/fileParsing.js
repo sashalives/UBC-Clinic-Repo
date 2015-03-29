@@ -1,104 +1,82 @@
 
 /* GLOBALS */
 
-var width  = 1100;           // width of svg image
-var height = 800;           // height of svg image
+var width  = 960;           // width of svg image
+var height = 400;           // height of svg image
+var eWidth = 1300;
+var eHeight = 50;
 var gWidth = 1200;
 var gHeight = 400;
 var margin = 20;            // amount of margin around plot area
 var pad = margin / 2;       // actual padding amount
-var radius = 20;             // fixed node radius
+var radius = 10;             // fixed node radius
 var yfixed = height / 2;  // y position for all nodes
 
 var currentLine = 0; // Starting index for line to access in file
 var fileContents;
 var fileFiltered;
-var structure;
 var energy;
 var dots;
 
 function parseStructure(text) {
 
-    var nodeContainer = d3.select("#arc-diagram")
+    // var arcContainer = d3.select("body")
+    //     .append("svg")
+    //     .attr("id", "arcs")
+    //     .attr("width", width)
+    //     .attr("height", height);
+
+    var nodeContainer = d3.select("body")
         .append("svg")
         .attr("id", "nodes")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1100 800");
+        .attr("width", width)
+        .attr("height", height);
 
-    var barContainer = d3.select("#energy-bar-graph")
+        // Changes to add bar chart
+    var barContainer = d3.select("body")
         .append("svg")  //svg:g???
         .attr("id","barchart")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1300 50")
-        .style("padding-left","20px");
-    var axisContainer = d3.select("#energy-bar-graph")
-        .append("svg")  //svg:g???
-        .attr("id","axis")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1300 50")
+        .attr("width",eWidth)
+        .attr("height", eHeight)
         .style("padding-left","20px");
 
-    var graphContainer = d3.select("#energy-plot-graph")
+    var axisContainer = d3.select("body")
+        .append("svg")  //svg:g???
+        .attr("id","axis")
+        .attr("width",eWidth)
+        .attr("height", 50)
+        .style("padding-left","20px");
+    var graphContainer = d3.select("body")
         .append("svg")  //svg:g???
         .attr("id","graph")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1200 400");
+        .attr("width",gWidth)
+        .attr("height", gHeight);
 
     fileContents = text;
     fileFiltered = fileContents.split("\n"[0]);
 
-    initializeGraphics();
-
-    updateData();
-}
-
-function initializeGraphics() {
     drawNodes();
     initializeEnergy();
     energyPlot(energy);
     drawGraph();
 }
 
-function initializeEnergy(){
-    currentLine += 1;
-    energy = [(fileFiltered[currentLine].split(',')[1])];
-}
-
-// Updates graph with next data point
-function updateData() {
-    energy = [(fileFiltered[currentLine].split(',')[1])];
-    energyPlot(energy);
-
-    dots.style("fill","black")
-        .attr("r",2)
-    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
-        .style("fill", "red")
-        .attr("r", 5);
-
-    updateArcDiagram();
-
-    currentLine += 1;
-}
-
-////////////////////// ARC DIAGRAM CODE //////////////////////////
-
-function updateArcDiagram() {
-    var bondString = (fileFiltered[currentLine].split(','))[0];
-
-    var bondDictionary = buildLinks(bondString);
-
-    console.log(bondDictionary);
-
-    drawLinks(bondDictionary);
-}
-
+// Draws nodes on plot
 function drawNodes() {
 
     // used to assign nodes color by group
     var color = d3.scale.category10();
 
-    structure = (fileFiltered[currentLine].split(','))[0].split('');
+    var structure = (fileFiltered[currentLine].split(','))[0].split('');
 
+
+    //currentLine += 1;
+    console.log(structure);
+
+    //var energy = [(fileFiltered[currentLine].split(',')[1])];
+    //console.log(energy)
+
+    // Building the arc diagram drawing
     var xscale = d3.scale.linear()
         .domain([0, structure.length - 1])
         .range([radius, width - margin - radius]);
@@ -109,105 +87,16 @@ function drawNodes() {
         .append("circle")
         .attr("class", "node")
         .attr("id", function(d, i) { return d; })
-        .attr("cx", function(d, i) { return xscale(i); })
+        .attr("cx", function(d, i) { return xscale(i); }) // HELP CONFUSED
         .attr("cy", function(d, i) { return yfixed; })
         .attr("r",  function(d, i) { return radius; })
         .style("fill",   function(d, i) { return color(d); });
 }
 
-// helper function - parses the current line into links between nodes
-function buildLinks(string) {
-
-    var linksArray = [];
-    var stringLength = string.length;
-
-    // first, count the number of open parentheses:
-    var bonds = (string.match(/\(/g)||[]).length;
-
-    var counter = 0;
-
-    var currentOpen = stringLength+1;
-    var prevStart = 0;
-
-    for (b = 0; b < bonds; b++) {
-
-        for (c = prevStart; c < stringLength; c++) {
-            if (string.charAt(c) == '(') {
-                counter++;
-
-                if (currentOpen == stringLength+1) {
-                    prevStart = c;
-                    currentOpen = c;
-                }
-            } 
-            else if ((string.charAt(c) == ')') && 
-                     (counter > 0)) {
-                counter--;
-
-                if (counter == 0) {
-                    linksArray.push({"source":currentOpen, "target":c});
-                    prevStart += 1;
-                    currentOpen = stringLength+1;
-                    break;
-                }
-            }
-        }
-    }
-
-    return linksArray;
+function initializeEnergy(){
+    currentLine += 1;
+    energy = [(fileFiltered[currentLine].split(',')[1])];
 }
-
-// Draws nice arcs for each link on plot
-function drawLinks(links) {
-    var xscale = d3.scale.linear()
-        .domain([0, structure.length - 1])
-        .range([radius, width - margin - radius]);
-
-    // scale to generate radians (just for lower-half of circle)
-    var radians = d3.scale.linear()
-        .range([Math.PI / 2, 3 * Math.PI / 2]);
-
-    // path generator for arcs (uses polar coordinates)
-    var arc = d3.svg.line.radial()
-        .interpolate("basis")
-        .tension(0)
-        .angle(function(d) { return radians(d); });
-
-    // remove old links
-    d3.select("#nodes").selectAll(".link").remove();
-    // add links
-    d3.select("#nodes").selectAll(".link")
-        .data(links)
-        .enter()
-        .append("path")
-        .attr("class", "link")
-        .attr("transform", function(d, i) {
-            // arc will always be drawn around (0, 0)
-            // shift so (0, 0) will be between source and target
-            var xshift = xscale(d.source) + (xscale(d.target) - xscale(d.source)) / 2;
-            var yshift = yfixed + radius;
-            return "translate(" + xshift + ", " + yshift + ")";
-        })
-        .attr("d", function(d, i) {
-            // get x distance between source and target
-            var xdist = Math.abs(xscale(d.source) - xscale(d.target));
-
-            // set arc radius based on x distance
-            arc.radius(xdist / 2);
-
-            // want to generate 1/3 as many points per pixel in x direction
-            var points = d3.range(0, Math.ceil(xdist / 3));
-
-            // set radian scale domain
-            radians.domain([0, points.length - 1]);
-
-            // return path for arc
-            return arc(points);
-        });
-}
-
-////////////////////// ENERGY PLOT CODE //////////////////////////
-
 function energyPlot(currentEnergy) {
 
     //var energy = [(fileFiltered[currentLine].split(',')[1])];
@@ -215,7 +104,7 @@ function energyPlot(currentEnergy) {
     // Building the energy bar
     //currentLine += 1;
     //energy = [(fileFiltered[currentLine].split(',')[1])];
-    // console.log(currentEnergy)
+    console.log(currentEnergy)
     
     var min = -5  //get values from array of text 
     var max = 5
@@ -253,9 +142,21 @@ function energyPlot(currentEnergy) {
         .attr("class", "axis")
         .call(xAxis);
 
+
 }
 
-////////////////////// ENERGY GRAPH CODE //////////////////////////
+// Updates graph with next data point
+function updateData() {
+    currentLine += 1;
+    energy = [(fileFiltered[currentLine].split(',')[1])];
+    energyPlot(energy);
+    dots.style("fill","black")
+        .attr("r",2)
+    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
+
+}
 
 function drawGraph() {
     var data = [];
@@ -275,10 +176,10 @@ function drawGraph() {
     }
 
     var min = d3.min(data);
-    // console.log(min)
+    console.log(min)
 
     var max = d3.max(data);
-    // console.log(max)
+    console.log(max)
 
     var y = d3.scale.linear()
         .domain([min,max])
@@ -355,4 +256,7 @@ function drawGraph() {
     dots.exit().remove();
 
 }
+
+
+
 
