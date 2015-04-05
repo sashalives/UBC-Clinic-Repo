@@ -61,7 +61,23 @@ void Filter::buildDB()
 	cout << "initial structure is " << _header << endl;
 	_initialStructure = line;
 
+	// Line number addition
+	fstream tempFile;
+
+	std::string tempFileName = _fileName;
+	tempFileName.erase(tempFileName.size()-4,string::npos).append("numbers");
+
+	tempFile.open(tempFileName, fstream::out); 
+
+	tempFile << _header << endl;
+	tempFile << _initialStructure << endl;
+
+	int currentLine = 0;
+
 	while (getline(_inputFile, line)) {
+
+		tempFile << line << ", " << to_string(currentLine) << endl;
+		++currentLine;
 
 		std::vector<std::string> parsedStrand;
 
@@ -107,23 +123,28 @@ void Filter::filter()
 
 	vector<Structure> structuresList; 
 	mostVisitedStructures(structuresList);
-	int listSize = structuresList.size();
-
-	cout << "filtering " << to_string(listSize) << " structures" << endl;
 
 	ifstream inputFile;
 	fstream tempFile;
 	string inFileName;
 	string tmpName;
 
-	for (int i=0; i<listSize; ++i) {
+	// Maintain count of how many structures we've filtered to facilitate logic around tempfile lifecycle
+	int i = 0;
 
-		if (i==0)
+	while (structuresList.size() > 0) {
+
+		//////////////////////////////// FILE MANAGEMENT //////////////////////////////////
+		if (i==0) {
 			inFileName = _fileName;
-		else
+			inFileName.erase(inFileName.size()-4,string::npos).append("numbers");
+		} else {
 			inFileName = "tempFile" + to_string(i-1);
+		}
 
-		if (i==(listSize-1)) {
+		// if there is only one structure left in the most visited structures list, there
+		// cannot be any left after filtering it.
+		if (structuresList.size() == 1) {
 			string finalPrefix = "remove_loops_";
 			tmpName = finalPrefix.append(_fileName);
 		} else
@@ -132,7 +153,9 @@ void Filter::filter()
 		inputFile.open(inFileName, fstream::in);
 		tempFile.open(tmpName, fstream::out);
 
-		string mostVisited = structuresList[i].structure;
+		///////////////////////////////// STRUCTURE LOGIC /////////////////////////////////////
+
+		string mostVisited = structuresList.at(0).structure;
 
 		cout << "Filtering for " << mostVisited << endl;
 		it = _db.find(str_hash(mostVisited));
@@ -142,16 +165,8 @@ void Filter::filter()
 		{
 			std::string line;
 
-			vector<string> loop;
-
+			///////// HEADER MANAGEMENT ////////
 			getline(inputFile, line);
-
-			if (i==0) {
-				// strip long header
-				while (line.find("Count") != std::string::npos) {
-					getline(inputFile, line);
-				}
-			}
 
 			// write nucleotide sequence to tempfile
 			tempFile << line << endl;
@@ -159,7 +174,11 @@ void Filter::filter()
 			// strip initial structure header
 			getline(inputFile, line);
 
+			// write initial structure header to tempfile
 			tempFile << line << endl;
+
+			///////// FILTERING ///////////
+			vector<pair<string, int>> loop;
 
 			while (getline(inputFile, line))
 			{
@@ -167,6 +186,8 @@ void Filter::filter()
 				std::vector<std::string> parsedStrand;
 				split(line, ',', parsedStrand);	
 				string strandStructure = parsedStrand[0];
+				int originalLineNumber;
+				(i==0) ? originalLineNumber = stoi(parsedStrand[3]) : originalLineNumber = stoi(parsedStrand[2]);
 
 				if (strandStructure == mostVisited)
 				{
@@ -177,35 +198,35 @@ void Filter::filter()
 
 						for (int i = 0; i < loopLength; ++i)
 						{
-							if (_db[str_hash(loop[i])].second <= _interestingNumber)
+							if (_db[str_hash(loop[i].first)].second <= _interestingNumber)
 								hasUniqueStructure = true;
 						}
 
 						for (int i = 0; i < loopLength; ++i) 
 						{
 							if (hasUniqueStructure) {
-								tempFile << _db[str_hash(loop[i])].first.csvFromStructure() << endl;
+								tempFile << _db[str_hash(loop[i].first)].first.csvFromStructure() << ", " << to_string(loop[i].second) << endl;
 							} else {
-								if (_db[str_hash(loop[i])].second == 1) {
-									_db.erase(str_hash(loop[i]));
+								if (_db[str_hash(loop[i].first)].second == 1) {
+									_db.erase(str_hash(loop[i].first));
 								} else {
-									_db[str_hash(loop[i])].second--;
+									_db[str_hash(loop[i].first)].second--;
 								}
 							}
 						}
 
-						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << endl;
+						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << ", " << to_string(originalLineNumber) << endl;
 
 						loop.clear();
 					} else {
-						loop.push_back(strandStructure);
+						loop.push_back(make_pair(strandStructure, originalLineNumber));
 					}
 				} else {
 					if (loop.size() > 0)
 					{
-						loop.push_back(strandStructure);
+						loop.push_back(make_pair(strandStructure, originalLineNumber));
 					} else {
-						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << endl;
+						tempFile << _db[str_hash(strandStructure)].first.csvFromStructure() << ", " << to_string(originalLineNumber) << endl;
 					}
 				}
 			}
@@ -215,17 +236,27 @@ void Filter::filter()
 				int loopLength = loop.size();
 				for (int i = 0; i < loopLength; ++i)
 				{
-					tempFile << _db[str_hash(loop[i])].first.csvFromStructure() << "\n";
+					tempFile << _db[str_hash(loop[i].first)].first.csvFromStructure() << ", " << loop[i].second << endl;
 				}
 			}
 		} else {
 			cout << "Error creating tmpfile" << endl;
 		}
 
+		// Recalculate the most visited structures
+		mostVisitedStructures(structuresList);
+
 		inputFile.close();
 		tempFile.close();
 
-		if (i > 0) remove(inFileName.c_str());
+		if (structuresList.size() == 0) {
+			copyToFinalFile(i);
+			break;
+		}
+
+		// remove(inFileName.c_str());
+
+		++i;
 	}
 
 	convertToJSON();
@@ -290,10 +321,20 @@ void Filter::convertToJSON()
 	}
 }
 
-size_t Filter::hash(string structure)
+void Filter::copyToFinalFile(int i) 
 {
-	// NOTE: not used, currently using default c++ string hashing function
-	return 10;
+	string inFileName = "tempFile" + to_string(i);
+	string finalPrefix = "remove_loops_";
+	string tmpName = finalPrefix.append(_fileName);
+	std::fstream tempFile;
+	std::ifstream inFile;
+
+	cout << "Copying to final file from " << inFileName << endl;
+
+	inFile.open(inFileName, fstream::in);
+	tempFile.open(tmpName, fstream::out);
+
+	tempFile << inFile.rdbuf();
 }
 
 struct countSorter 
@@ -306,21 +347,32 @@ struct countSorter
 
 void Filter::mostVisitedStructures(vector<Structure> &list)
 {
+	list.clear();
 
 	vector<pair<size_t, pair<Structure, int> > > mapcopy(_db.begin(), _db.end());
 	sort(mapcopy.begin(), mapcopy.end(), countSorter());
 
 	vector<pair<size_t, pair<Structure, int> > >::iterator listIterator = mapcopy.begin();
 
-	// for (int i=0; i < _numberOfFilters; ++i) {
-	// 	list[i] = mapcopy[i].second.first;
-	// }
-
 	while (listIterator->second.second >= _numberOfFilters)
 	{
 		list.push_back(listIterator->second.first);
 
 		++listIterator;
+	}
+
+	vector<Structure>::iterator iter;
+	// Strip structures that we've already visited
+	for (iter = list.begin(); iter != list.end(); ) {
+		std::string visitedStructure = iter->structure;
+
+		if (_filteredStructures.find(visitedStructure) == _filteredStructures.end() ) {
+			// If we *haven't* already filtered by this structure
+			_filteredStructures.insert(visitedStructure);
+			break;
+		} else {
+			iter = list.erase(iter);
+		}
 	}
 
 }

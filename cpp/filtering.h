@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -35,13 +36,15 @@ private:
 
 	std::map<size_t, pair<Structure, int> > _db;
 	map<size_t, pair<Structure, int> >::iterator it;
+
+	std::unordered_set<std::string> _filteredStructures;
 	
 	void buildDB();
 	void filter();
 
 	void convertToJSON();
+	void copyToFinalFile(int i);
 
-	size_t hash(string structure);
 	void mostVisitedStructures(vector<Structure> &list);
 	// bool countSort(pair<string, pair<string, int> > a, pair<string, pair<string, int> > b);
 	void fileCopy(string src, string dst);

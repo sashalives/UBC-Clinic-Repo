@@ -20,20 +20,20 @@ int main (int argc, char *argv[]) {
 	}
 
 	char * filename = argv[1];
-	int numberOfFilters = 2;
+	int numberToFilter = 2;
 	int interestingNumber = 1;
 
 	if (argc == 4) {
-		numberOfFilters = atoi(argv[2]);
+		numberToFilter = atoi(argv[2]);
 		interestingNumber = atoi(argv[3]);
 	} else if (argc == 3) {
-		numberOfFilters = atoi(argv[2]);
+		numberToFilter = atoi(argv[2]);
 	}
 
 	string storedFileName(filename);
 
 	Filter *filter = new Filter(filename);
-	filter->runFiltering(numberOfFilters, interestingNumber);
+	filter->runFiltering(numberToFilter, interestingNumber);
 
 	return 0;
 }
