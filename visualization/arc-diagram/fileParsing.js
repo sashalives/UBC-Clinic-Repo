@@ -1,82 +1,141 @@
 
 /* GLOBALS */
 
-var width  = 960;           // width of svg image
+var width  = 1100;           // width of svg image
 var height = 400;           // height of svg image
-var eWidth = 1300;
-var eHeight = 50;
 var gWidth = 1200;
 var gHeight = 400;
 var margin = 20;            // amount of margin around plot area
 var pad = margin / 2;       // actual padding amount
-var radius = 10;             // fixed node radius
-var yfixed = height / 2;  // y position for all nodes
+var radius = 20;             // fixed node radius
+var yfixed = 50;  // y position for all nodes
 
 var currentLine = 0; // Starting index for line to access in file
 var fileContents;
 var fileFiltered;
+var structure;
 var energy;
+var currentEnergy;
 var dots;
+var i;
+var maxLen;
+var isAnimated = false;
+var saddlesOn = false;
+var minArray = [];
+var maxArray = [];
+var allText;
+
 
 function parseStructure(text) {
 
-    // var arcContainer = d3.select("body")
-    //     .append("svg")
-    //     .attr("id", "arcs")
-    //     .attr("width", width)
-    //     .attr("height", height);
-
-    var nodeContainer = d3.select("body")
+    var nodeContainer = d3.select("#arc-diagram")
         .append("svg")
         .attr("id", "nodes")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1100 400");
 
-        // Changes to add bar chart
-    var barContainer = d3.select("body")
+    var barContainer = d3.select("#energy-bar-graph")
         .append("svg")  //svg:g???
         .attr("id","barchart")
-        .attr("width",eWidth)
-        .attr("height", eHeight)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1300 50")
         .style("padding-left","20px");
-
-    var axisContainer = d3.select("body")
+    var axisContainer = d3.select("#energy-bar-graph")
         .append("svg")  //svg:g???
         .attr("id","axis")
-        .attr("width",eWidth)
-        .attr("height", 50)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1300 50")
         .style("padding-left","20px");
-    var graphContainer = d3.select("body")
+
+    var graphContainer = d3.select("#energy-plot-graph")
         .append("svg")  //svg:g???
         .attr("id","graph")
-        .attr("width",gWidth)
-        .attr("height", gHeight);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1200 400");
 
     fileContents = text;
     fileFiltered = fileContents.split("\n"[0]);
 
-    drawNodes();
-    initializeEnergy();
-    energyPlot(energy);
-    drawGraph();
+    initializeGraphics();
+
+    updateData();
 }
 
-// Draws nodes on plot
+function initializeGraphics() {
+    drawNodes();
+    initializeEnergy();
+    //energyPlot(energy);
+    drawGraph();
+
+}
+
+function initializeEnergy(){
+    console.log(currentLine)
+    currentLine += 1;
+    energy = [(fileFiltered[currentLine].split(',')[1])];
+    console.log(currentLine)
+}
+
+// Updates graph with next data point
+function updateData() {
+    energy = [(fileFiltered[currentLine].split(',')[1])];
+    //energyPlot(energy);
+    console.log(currentLine)
+
+    currentEnergy.text(" Current Energy: " + energy);
+
+    dots.style("fill","black")
+        .attr("r",2)
+    dots.filter(function(d,i) { return i == currentLine -1 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
+
+    updateArcDiagram();
+
+    currentLine += 1;
+}
+
+function backData() {
+    //energy = [(fileFiltered[currentLine].split(',')[1])];
+    //energyPlot(energy);
+
+    // we start at 2 because at the end of the first iteration we are at 2
+    if (currentLine > 2){
+        currentLine -= 2;
+    }
+    // need some method for the last value
+    console.log(currentLine)
+
+    dots.style("fill","black")
+        .attr("r",2)
+    dots.filter(function(d,i) { return i == currentLine -1 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
+
+    updateArcDiagram();
+
+}
+
+////////////////////// ARC DIAGRAM CODE //////////////////////////
+
+function updateArcDiagram() {
+    console.log(currentLine)
+    var bondString = (fileFiltered[currentLine].split(','))[0];
+
+    var bondDictionary = buildLinks(bondString);
+
+    console.log(bondDictionary);
+
+    drawLinks(bondDictionary);
+}
+
 function drawNodes() {
 
     // used to assign nodes color by group
     var color = d3.scale.category10();
 
-    var structure = (fileFiltered[currentLine].split(','))[0].split('');
+    structure = (fileFiltered[currentLine].split(','))[0].split('');
 
-
-    //currentLine += 1;
-    console.log(structure);
-
-    //var energy = [(fileFiltered[currentLine].split(',')[1])];
-    //console.log(energy)
-
-    // Building the arc diagram drawing
     var xscale = d3.scale.linear()
         .domain([0, structure.length - 1])
         .range([radius, width - margin - radius]);
@@ -87,16 +146,105 @@ function drawNodes() {
         .append("circle")
         .attr("class", "node")
         .attr("id", function(d, i) { return d; })
-        .attr("cx", function(d, i) { return xscale(i); }) // HELP CONFUSED
+        .attr("cx", function(d, i) { return xscale(i); })
         .attr("cy", function(d, i) { return yfixed; })
         .attr("r",  function(d, i) { return radius; })
         .style("fill",   function(d, i) { return color(d); });
 }
 
-function initializeEnergy(){
-    currentLine += 1;
-    energy = [(fileFiltered[currentLine].split(',')[1])];
+// helper function - parses the current line into links between nodes
+function buildLinks(string) {
+
+    var linksArray = [];
+    var stringLength = string.length;
+
+    // first, count the number of open parentheses:
+    var bonds = (string.match(/\(/g)||[]).length;
+
+    var counter = 0;
+
+    var currentOpen = stringLength+1;
+    var prevStart = 0;
+
+    for (b = 0; b < bonds; b++) {
+
+        for (c = prevStart; c < stringLength; c++) {
+            if (string.charAt(c) == '(') {
+                counter++;
+
+                if (currentOpen == stringLength+1) {
+                    prevStart = c;
+                    currentOpen = c;
+                }
+            } 
+            else if ((string.charAt(c) == ')') && 
+                     (counter > 0)) {
+                counter--;
+
+                if (counter == 0) {
+                    linksArray.push({"source":currentOpen, "target":c});
+                    prevStart += 1;
+                    currentOpen = stringLength+1;
+                    break;
+                }
+            }
+        }
+    }
+
+    return linksArray;
 }
+
+// Draws nice arcs for each link on plot
+function drawLinks(links) {
+    var xscale = d3.scale.linear()
+        .domain([0, structure.length - 1])
+        .range([radius, width - margin - radius]);
+
+    // scale to generate radians (just for lower-half of circle)
+    var radians = d3.scale.linear()
+        .range([Math.PI / 2, 3 * Math.PI / 2]);
+
+    // path generator for arcs (uses polar coordinates)
+    var arc = d3.svg.line.radial()
+        .interpolate("basis")
+        .tension(0)
+        .angle(function(d) { return radians(d); });
+
+    // remove old links
+    d3.select("#nodes").selectAll(".link").remove();
+    // add links
+    d3.select("#nodes").selectAll(".link")
+        .data(links)
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr("transform", function(d, i) {
+            // arc will always be drawn around (0, 0)
+            // shift so (0, 0) will be between source and target
+            var xshift = xscale(d.source) + (xscale(d.target) - xscale(d.source)) / 2;
+            var yshift = yfixed + radius;
+            return "translate(" + xshift + ", " + yshift + ")";
+        })
+        .attr("d", function(d, i) {
+            // get x distance between source and target
+            var xdist = Math.abs(xscale(d.source) - xscale(d.target));
+
+            // set arc radius based on x distance
+            arc.radius(xdist / 2);
+
+            // want to generate 1/3 as many points per pixel in x direction
+            var points = d3.range(0, Math.ceil(xdist / 3));
+
+            // set radian scale domain
+            radians.domain([0, points.length - 1]);
+
+            // return path for arc
+            return arc(points);
+        });
+}
+
+////////////////////// ENERGY PLOT CODE //////////////////////////
+/*
 function energyPlot(currentEnergy) {
 
     //var energy = [(fileFiltered[currentLine].split(',')[1])];
@@ -104,7 +252,7 @@ function energyPlot(currentEnergy) {
     // Building the energy bar
     //currentLine += 1;
     //energy = [(fileFiltered[currentLine].split(',')[1])];
-    console.log(currentEnergy)
+    // console.log(currentEnergy)
     
     var min = -5  //get values from array of text 
     var max = 5
@@ -142,21 +290,9 @@ function energyPlot(currentEnergy) {
         .attr("class", "axis")
         .call(xAxis);
 
+} */
 
-}
-
-// Updates graph with next data point
-function updateData() {
-    currentLine += 1;
-    energy = [(fileFiltered[currentLine].split(',')[1])];
-    energyPlot(energy);
-    dots.style("fill","black")
-        .attr("r",2)
-    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
-        .style("fill", "red")
-        .attr("r", 5);
-
-}
+////////////////////// ENERGY GRAPH CODE //////////////////////////
 
 function drawGraph() {
     var data = [];
@@ -176,10 +312,10 @@ function drawGraph() {
     }
 
     var min = d3.min(data);
-    console.log(min)
+    // console.log(min)
 
     var max = d3.max(data);
-    console.log(max)
+    // console.log(max)
 
     var y = d3.scale.linear()
         .domain([min,max])
@@ -230,33 +366,136 @@ function drawGraph() {
         .attr("cx", function(d, i) { return x(i)})
         .attr("cy", function(d,i) { return y(d)});
 
+    currentEnergy = d3.select("body")
+        .append("div")
+        .style("z-index", "10")
+        .style('padding-bottom', '20px')
+        .style("padding-left","20px")
+        .style("padding-righ", "20px")
+        .style("color","red")
+        .text(" Current Energy: " + energy);
 
-    var tooltip = d3.select("body")
+    var hoverEnergy = d3.select("body")
         //.data(data)
         .append("div")
         //.style("position", "absolute")
         .style("z-index", "10")
         .style('padding-bottom', '20px')
-        .style("padding-left","20px");
-        //.style("visibility", "hidden")
-        //.text(" ");
+        .style("padding-left","20px")
+        .style("color", "blue");
 
 
-    dots.on('mouseover', function(d,i) {d3.select(this).attr("r", 5).style("fill", "blue"); return tooltip.style("visibility", "visible").text("  Energy: " + d);})
+    dots.on('mouseover', function(d,i) {if (saddlesOn == false){ d3.select(this).attr("r", 5).style("fill", "blue"); return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i);} })
         //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
-        .on('mouseout',  function() {d3.select(this).attr("r", 2).style("fill", "black"); return tooltip.style("visibility", "hidden");})
+        .on('mouseout',  function() {if (saddlesOn == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
         //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
-        //.on('click', (d, i) -> console.log d, i) **/
+       
+        // TODO : uncomment and test
+        .on('click', function(d,i) {if (isAnimated == false && saddlesOn == false){ currentLine = i+1; updateData(); } return; });
+
 
             
-    dots.filter(function(d,i) { return i == currentLine-1 })        // <== This line
-            .style("fill", "green")
-            .attr("r", 5);
+    //dots.filter(function(d,i) { return i == currentLine })        // <== This line
+      //      .style("fill", "green")
+       //     .attr("r", 5);
 
     dots.exit().remove();
 
 }
 
+function readTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                allText = rawFile.responseText;
+                //alert(allText);
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+function parseSaddlePoints()
+{
+    var text = allText;
+    var saddleArray = text.split("\n");
+    console.log(saddleArray)
+    var minIndex = saddleArray.indexOf("Min:");
+    var maxIndex = saddleArray.indexOf("Max:");
+    console.log(maxIndex)
+    console.log(minIndex)
+    for (i= maxIndex+1; i < minIndex; i++)
+    {
+        var minAdd = saddleArray[i].split(",");
+        minArray = minArray.concat(minAdd);
+    }
+    for(i= minIndex+1; i< saddleArray.length; i++)
+    {
+        var maxAdd = saddleArray[i].split(",");
+        maxArray = maxArray.concat(maxAdd);
+    }
+
+    
+
+
+}
+
+
+// appending tags so you can have multiple id attributes on a tag 
+function showSaddlePoints()
+{
+    saddlesOn = true;
+    readTextFile("/test.txt");
+    parseSaddlePoints();
+    console.log(minArray)
+    console.log(maxArray)
+    dots.style("fill","grey")
+        .attr("r",2);
+    for (l = 0; l < minArray.length; l++)
+    {
+        dots.filter(function(d,i) { return i == minArray[l]; })        // <== This line
+            .style("fill", "green")
+            .attr("r", 5);
+        }
+    for (l = 0; l < maxArray.length; l++)
+    {
+        dots.filter(function(d,i) { return i == maxArray[l]; })        // <== This line
+            .style("fill", "purple")
+            .attr("r", 5);
+        }
+
+
+}
+
+function hideSaddlePoints()
+{
+    dots.style("fill","black")
+        .attr("r",2);
+    saddlesOn = false;
+}
+
+
+function animateGraph()
+{
+        maxLen = fileFiltered.length-1;
+        //console.log(fileFiltered.length)
+
+        i = 0;
+        anim = window.setInterval(function () {if (i < maxLen){isAnimated = true; updateData();  i++;}}, 1000);
+
+
+}
+
+function stopGraph()
+{
+    i = maxLen;
+}
 
 
 
