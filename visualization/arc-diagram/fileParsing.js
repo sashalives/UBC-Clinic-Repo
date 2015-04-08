@@ -21,6 +21,8 @@ var i;
 var maxLen;
 var isAnimated = false;
 var saddlesOn = false;
+var selected = false;
+var noneSelectedYet = true;
 var minArray = [];
 var maxArray = [];
 var allText;
@@ -385,13 +387,14 @@ function drawGraph() {
         .style("color", "blue");
 
 
-    dots.on('mouseover', function(d,i) {if (saddlesOn == false){ d3.select(this).attr("r", 5).style("fill", "blue"); return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i);} })
+    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-2 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i);} })
         //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
-        .on('mouseout',  function() {if (saddlesOn == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
+        .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -1 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
         //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
        
         // TODO : uncomment and test
-        .on('click', function(d,i) {if (isAnimated == false && saddlesOn == false){ currentLine = i+1; updateData(); } return; });
+        .on('click', function(d,i) {if (isAnimated == false){ currentLine = i+1; updateData(); selected=true; noneSelectedYet=false;} if (saddlesOn == true) { showSaddlePoints(); } return; });
+
 
 
             
@@ -402,6 +405,8 @@ function drawGraph() {
     dots.exit().remove();
 
 }
+T
+
 
 function readTextFile(file)
 {
@@ -420,6 +425,9 @@ function readTextFile(file)
     }
     rawFile.send(null);
 }
+
+
+
 
 function parseSaddlePoints()
 {
@@ -451,21 +459,25 @@ function parseSaddlePoints()
 function showSaddlePoints()
 {
     saddlesOn = true;
-    readTextFile("/test.txt");
     parseSaddlePoints();
     console.log(minArray)
     console.log(maxArray)
     dots.style("fill","grey")
         .attr("r",2);
+
+    dots.filter(function(d,i) { return i == currentLine-2 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
+
     for (l = 0; l < minArray.length; l++)
     {
-        dots.filter(function(d,i) { return i == minArray[l]; })        // <== This line
+        dots.filter(function(d,i) { if (minArray[l] != currentLine-2){ return i == minArray[l]; } })        // <== This line
             .style("fill", "green")
             .attr("r", 5);
         }
     for (l = 0; l < maxArray.length; l++)
     {
-        dots.filter(function(d,i) { return i == maxArray[l]; })        // <== This line
+        dots.filter(function(d,i) { if (maxArray[l] != currentLine-2){ return i == maxArray[l]; } })        // <== This line
             .style("fill", "purple")
             .attr("r", 5);
         }
@@ -477,7 +489,14 @@ function hideSaddlePoints()
 {
     dots.style("fill","black")
         .attr("r",2);
+
+    dots.filter(function(d,i) { return i == currentLine-2 })        // <== This line
+        .style("fill", "red")
+        .attr("r", 5);
+
     saddlesOn = false;
+
+    console.log(selected)
 }
 
 
