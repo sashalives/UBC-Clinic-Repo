@@ -370,6 +370,7 @@ function drawGraph() {
 
     currentEnergy = d3.select("body")
         .append("div")
+        .attr("id", "current-energy")
         .style("z-index", "10")
         .style('padding-bottom', '20px')
         .style("padding-left","20px")
@@ -380,6 +381,7 @@ function drawGraph() {
     var hoverEnergy = d3.select("body")
         //.data(data)
         .append("div")
+        .attr("id","hover-energy")
         //.style("position", "absolute")
         .style("z-index", "10")
         .style('padding-bottom', '20px')
