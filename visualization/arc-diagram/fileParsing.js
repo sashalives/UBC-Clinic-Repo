@@ -90,7 +90,7 @@ function updateData() {
 
     dots.style("fill","black")
         .attr("r",2)
-    dots.filter(function(d,i) { return i == currentLine -1 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine -2 })        // <== This line
         .style("fill", "red")
         .attr("r", 5);
 
@@ -394,13 +394,13 @@ function drawGraph() {
         .style("color", "blue");
 
 
-    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-2 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index:" + originalIndices[i]);} })
+    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-3 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index:" + originalIndices[i]);} })
         //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
-        .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -2 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
+        .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -3 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
         //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
        
         // TODO : uncomment and test
-        .on('click', function(d,i) {if (isAnimated == false){ currentLine = i+1; updateData(); selected=true; noneSelectedYet=false;} if (saddlesOn == true) { showSaddlePoints(); } return; });
+        .on('click', function(d,i) {if (isAnimated == false){ currentLine = i+2; updateData(); selected=true; noneSelectedYet=false;} if (saddlesOn == true) { showSaddlePoints(); } return; });
 
 
 
@@ -431,6 +431,7 @@ function readTextFile(file)
         }
     }
     rawFile.send(null);
+    parseSaddlePoints();
 }
 
 
@@ -466,25 +467,25 @@ function parseSaddlePoints()
 function showSaddlePoints()
 {
     saddlesOn = true;
-    parseSaddlePoints();
+    //parseSaddlePoints();
     console.log(minArray)
     console.log(maxArray)
     dots.style("fill","grey")
         .attr("r",2);
 
-    dots.filter(function(d,i) { return i == currentLine-2 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine-3 })        // <== This line
         .style("fill", "red")
         .attr("r", 5);
 
     for (l = 0; l < minArray.length; l++)
     {
-        dots.filter(function(d,i) { if (minArray[l] != currentLine-2){ return i == minArray[l]; } })        // <== This line
+        dots.filter(function(d,i) { if (minArray[l] != currentLine-3){ return i == minArray[l]; } })        // <== This line
             .style("fill", "green")
             .attr("r", 5);
         }
     for (l = 0; l < maxArray.length; l++)
     {
-        dots.filter(function(d,i) { if (maxArray[l] != currentLine-2){ return i == maxArray[l]; } })        // <== This line
+        dots.filter(function(d,i) { if (maxArray[l] != currentLine-3){ return i == maxArray[l]; } })        // <== This line
             .style("fill", "purple")
             .attr("r", 5);
         }
@@ -497,7 +498,7 @@ function hideSaddlePoints()
     dots.style("fill","black")
         .attr("r",2);
 
-    dots.filter(function(d,i) { return i == currentLine-2 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine-3 })        // <== This line
         .style("fill", "red")
         .attr("r", 5);
 
