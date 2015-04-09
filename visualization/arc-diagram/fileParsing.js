@@ -26,6 +26,7 @@ var noneSelectedYet = true;
 var minArray = [];
 var maxArray = [];
 var allText;
+var pointData = [];
 
 
 function parseStructure(text) {
@@ -72,17 +73,18 @@ function initializeGraphics() {
 }
 
 function initializeEnergy(){
-    console.log(currentLine)
-    currentLine += 1;
+    //console.log(currentLine)
+    currentLine += 2;
     energy = [(fileFiltered[currentLine].split(',')[1])];
-    console.log(currentLine)
+    //console.log(energy)
 }
 
 // Updates graph with next data point
 function updateData() {
     energy = [(fileFiltered[currentLine].split(',')[1])];
     //energyPlot(energy);
-    console.log(currentLine)
+    //console.log(fileFiltered)
+    //console.log(fileFiltered[currentLine].split(',')[1])
 
     currentEnergy.text(" Current Energy: " + energy);
 
@@ -297,26 +299,29 @@ function energyPlot(currentEnergy) {
 ////////////////////// ENERGY GRAPH CODE //////////////////////////
 
 function drawGraph() {
-    var data = [];
+
+    var originalIndices = [];
 
     var margin = {top: 30, right: 20, bottom: 30, left: 20},
     width = gWidth - margin.left - margin.right,
     height = gHeight - margin.top - margin.bottom;
 
     var count = 0;
-    for (i = 1; i < fileFiltered.length; i++)
+    for (i = 2; i < fileFiltered.length; i++)
     {
         var point = parseFloat(fileFiltered[i].split(',')[1]);
-        //console.log(point)
-        data.push(point);
+        //FIXME - MAY NEED PARSE INT HERE
+        var index = fileFiltered[i].split(',')[2];
+        pointData.push(point);
+        originalIndices.push(index);
         count += 1;
         //console.log(data)
     }
 
-    var min = d3.min(data);
+    var min = d3.min(pointData);
     // console.log(min)
 
-    var max = d3.max(data);
+    var max = d3.max(pointData);
     // console.log(max)
 
     var y = d3.scale.linear()
@@ -359,7 +364,7 @@ function drawGraph() {
 
 
     dots = graph.selectAll('.point')
-        .data(data);
+        .data(pointData);
 
 
     dots.enter().append("svg:circle")
@@ -389,9 +394,9 @@ function drawGraph() {
         .style("color", "blue");
 
 
-    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-2 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i);} })
+    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-2 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index:" + originalIndices[i]);} })
         //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
-        .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -1 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
+        .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -2 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
         //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
        
         // TODO : uncomment and test
@@ -407,7 +412,7 @@ function drawGraph() {
     dots.exit().remove();
 
 }
-T
+
 
 
 function readTextFile(file)
@@ -504,7 +509,7 @@ function hideSaddlePoints()
 
 function animateGraph()
 {
-        maxLen = fileFiltered.length-1;
+        maxLen = pointData.length-1;
         //console.log(fileFiltered.length)
 
         i = 0;
@@ -516,6 +521,7 @@ function animateGraph()
 function stopGraph()
 {
     i = maxLen;
+    isAnimated = false;
 }
 
 
