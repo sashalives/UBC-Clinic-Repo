@@ -14,8 +14,14 @@
 </head>
 
 <body>
-<div id="nav-buttons">
-<div id="option" style="padding-bottom:5px">
+<div class="content-wrapper">
+<div id="upload-file" style="padding-top:8px" class="col-md-3">
+	<form>
+	 Filtered Output File Path: <input type="text" name="filePath">
+	 <input type="button" value="Load"  onclick="loadStructure(this.form.filePath.value)"/>
+	</form>
+</div>
+<div id="nav-buttons" style="padding-top:8px" >
 	<!-- <p> click to update </p> -->
 
    <input name="backButton" 
@@ -28,7 +34,7 @@
                 value="Next" 
                 onclick="updateData()" />
 </div>
-<div id="animation" style="padding-bottom:5px">
+<div id="animation" style="padding-top:8px" >
 	<input name="animateButton"
 			type="button"
 			value="Play"
@@ -38,9 +44,8 @@
 			value="Pause"
 		 	onclick="stopGraph()" />
 </div>
-</div>
-<div id="saddle-points">
-<div style="padding-bottom:5px">
+<div id="saddle-points" >
+<div style="padding-top:8px; padding-bottom:8px; padding-left:9px">
 	<input name="saddlePointOnButton"
 			type="button"
 			value="Show Saddle Points"
@@ -52,29 +57,13 @@
 		</div>
 		<div>
 	<form>
-	 Saddle Points File Path: <input type="text" name="filePath">
-	 <input type="button" value="Load"  onclick="readTextFile(this.form.filePath.value)"/>
+	 &nbsp;&nbsp; Saddle Points File Path: <input type="text" name="filePath">
+	 <input type="button" value="Load"  onclick="loadSaddlePoints(this.form.filePath.value)"/>
 	</form>
 </div>
 </div>
 
 
-<div class="content-wrapper">
-
-	<div id="nav-buttons" class='col-md-3'>
-	</div>
-
-	<div id="saddle-points" class='col-md-3'>
-
-	</div>
-
-	<div id="number-of-uniques" class='col-md-3'>
-
-	</div>
-
-	<div id="number-of-repeats" class='col-md-3'>
-
-	</div>
 
 	<div id="arc-diagram" class='col-md-6'>
 
@@ -95,8 +84,9 @@
 
 </body>
 
-<script>
+<!--<script>
+
 d3.text("remove_loops_testFromPaperOutput1.txt", parseStructure);
-</script>
+</script> -->
 
 </html>

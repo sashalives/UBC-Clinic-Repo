@@ -28,6 +28,11 @@ var maxArray = [];
 var allText;
 var pointData = [];
 
+function loadStructure(file){
+    readTextFile(file);
+    d3.text("remove_loops_testFromPaperOutput1.txt", parseStructure);
+}
+
 
 function parseStructure(text) {
 
@@ -394,7 +399,7 @@ function drawGraph() {
         .style("color", "blue");
 
 
-    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-3 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index:" + originalIndices[i]);} })
+    dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-3 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index: " + originalIndices[i]);} })
         //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
         .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -3 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
         //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
@@ -414,6 +419,11 @@ function drawGraph() {
 }
 
 
+function loadSaddlePoints(file)
+{
+    readTextFile(file);
+    parseSaddlePoints();
+}
 
 function readTextFile(file)
 {
@@ -431,7 +441,6 @@ function readTextFile(file)
         }
     }
     rawFile.send(null);
-    parseSaddlePoints();
 }
 
 
