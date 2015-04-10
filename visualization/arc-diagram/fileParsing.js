@@ -2,7 +2,7 @@
 /* GLOBALS */
 
 var width  = 1100;           // width of svg image
-var height = 400;           // height of svg image
+var height = 500;           // height of svg image
 var gWidth = 1200;
 var gHeight = 400;
 var margin = 20;            // amount of margin around plot area
@@ -29,8 +29,8 @@ var allText;
 var pointData = [];
 
 function loadStructure(file){
-    readTextFile(file);
-    d3.text("remove_loops_testFromPaperOutput1.txt", parseStructure);
+    //readTextFile(file);
+    d3.text(file, parseStructure);
 }
 
 
@@ -40,9 +40,9 @@ function parseStructure(text) {
         .append("svg")
         .attr("id", "nodes")
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1100 400");
+        .attr("viewBox", "0 0 1100 500");
 
-    var barContainer = d3.select("#energy-bar-graph")
+    /*var barContainer = d3.select("#energy-bar-graph")
         .append("svg")  //svg:g???
         .attr("id","barchart")
         .attr("preserveAspectRatio", "xMinYMin meet")
@@ -53,17 +53,20 @@ function parseStructure(text) {
         .attr("id","axis")
         .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("viewBox", "0 0 1300 50")
-        .style("padding-left","20px");
+        .style("padding-left","20px");*/
 
     var graphContainer = d3.select("#energy-plot-graph")
         .append("svg")  //svg:g???
         .attr("id","graph")
         .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1200 400");
+        .attr("viewBox", "0 0 1200 400")
+        .style("padding-left","10px");
 
     fileContents = text;
-    fileFiltered = fileContents.split("\n"[0]);
-
+    console.log(fileContents)
+    fileFilteredComs = fileContents.split("\n"[0]);
+    fileFiltered = fileFilteredComs.slice(6);
+    console.log(fileFiltered)
     initializeGraphics();
 
     updateData();
@@ -449,7 +452,8 @@ function readTextFile(file)
 function parseSaddlePoints()
 {
     var text = allText;
-    var saddleArray = text.split("\n");
+    var saddleArrayComs = text.split("\n");
+    var saddleArray = saddleArrayComs.slice(7);
     console.log(saddleArray)
     var minIndex = saddleArray.indexOf("Min:");
     var maxIndex = saddleArray.indexOf("Max:");

@@ -1,0 +1,13 @@
+# File created with the following parameters: 
+# Sequence: AAAGGGUUU 
+# Start Structure: ......... 
+# Stop Structure: (((...)))     
+# Filtering Parameters: 1 and 1
+# Out below is the 2 highest and lowest points.
+
+Max:
+2
+4
+Min:
+1,3,5
+8

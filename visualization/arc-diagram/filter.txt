@@ -1,0 +1,17 @@
+# File created with the following parameters: 
+# Sequence: AAAGGGUUU 
+# Start Structure: ......... 
+# Stop Structure: (((...)))     
+# Filtering Parameters: 1 and 1
+
+AAAGGGUUU
+.........
+(.....).., 2.010000
+........., 0.000000
+.(......), 2.970000
+........., 0.000000
+..(.....), 2.640000
+........., 0.000000
+.(.....)., 2.470000
+((.....)), 1.670000
+(((...))), 1.450000
