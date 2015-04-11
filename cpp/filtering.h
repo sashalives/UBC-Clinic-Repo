@@ -7,9 +7,11 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <functional>
 #include <iostream>
 #include <fstream>
+#include "strand.h"
 
 using namespace std;
 
@@ -30,17 +32,20 @@ private:
 	const char *_fileName;
 	ifstream _inputFile;
 	string _header;
+	string _initialStructure;
 
-	std::map<size_t, std::pair<string, int> > _db;
-	map<size_t, pair<string, int> >::iterator it;
+	std::map<size_t, pair<Structure, int> > _db;
+	map<size_t, pair<Structure, int> >::iterator it;
 
-	std::vector<int> _energyDB;
-
+	std::unordered_set<std::string> _filteredStructures;
+	
 	void buildDB();
 	void filter();
 
-	size_t hash(string structure);
-	void mostVisitedStructures(vector<string> &list);
+	void convertToJSON();
+	void copyToFinalFile(int i);
+
+	void mostVisitedStructures(vector<Structure> &list);
 	// bool countSort(pair<string, pair<string, int> > a, pair<string, pair<string, int> > b);
 	void fileCopy(string src, string dst);
 
