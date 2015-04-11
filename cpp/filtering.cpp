@@ -72,6 +72,7 @@ void Filter::buildDB()
 	tempFile << _header << endl;
 	tempFile << _initialStructure << endl;
 
+	_db = {};
 	int currentLine = 0;
 
 	while (getline(_inputFile, line)) {
@@ -89,10 +90,13 @@ void Filter::buildDB()
 		string strandStructure = parsedStrand[0];
 
 		float energy;
-		if (energyStatement.size() == 4)
+		if (energyStatement.size() == 4) {
 			energy = stof(energyStatement[2]);
-		else
-			energy = stof(energyStatement[3]);
+		}
+		else if (energyStatement.size() == 3) {
+			energy = stof(energyStatement[1].erase(0,3));
+		}
+
 
 		Structure strandObject = Structure(strandStructure, energy);
 
@@ -254,7 +258,7 @@ void Filter::filter()
 			break;
 		}
 
-		// remove(inFileName.c_str());
+		remove(inFileName.c_str());
 
 		++i;
 	}
@@ -324,7 +328,7 @@ void Filter::convertToJSON()
 void Filter::copyToFinalFile(int i) 
 {
 	string inFileName = "tempFile" + to_string(i);
-	string finalPrefix = "remove_loops_";
+	string finalPrefix = "filtered_";
 	string tmpName = finalPrefix.append(_fileName);
 	std::fstream tempFile;
 	std::ifstream inFile;
