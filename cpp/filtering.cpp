@@ -328,7 +328,7 @@ void Filter::convertToJSON()
 void Filter::copyToFinalFile(int i) 
 {
 	string inFileName = "tempFile" + to_string(i);
-	string finalPrefix = "filtered_";
+	string finalPrefix = "remove_loops_";
 	string tmpName = finalPrefix.append(_fileName);
 	std::fstream tempFile;
 	std::ifstream inFile;
