@@ -63,10 +63,9 @@ function parseStructure(text) {
         .style("padding-left","10px");
 
     fileContents = text;
-    console.log(fileContents)
     fileFilteredComs = fileContents.split("\n"[0]);
     fileFiltered = fileFilteredComs.slice(6);
-    console.log(fileFiltered)
+    // console.log(fileFiltered)
     initializeGraphics();
 
     updateData();
@@ -136,8 +135,6 @@ function updateArcDiagram() {
 
     var bondDictionary = buildLinks(bondString);
 
-    console.log(bondDictionary);
-
     drawLinks(bondDictionary);
 }
 
@@ -147,6 +144,8 @@ function drawNodes() {
     var color = d3.scale.category10();
 
     structure = (fileFiltered[currentLine].split(','))[0].split('');
+
+    console.log(structure);
 
     var xscale = d3.scale.linear()
         .domain([0, structure.length - 1])
@@ -159,9 +158,20 @@ function drawNodes() {
         .attr("class", "node")
         .attr("id", function(d, i) { return d; })
         .attr("cx", function(d, i) { return xscale(i); })
-        .attr("cy", function(d, i) { return yfixed; })
+        .attr("cy", function(d, i) { return 50; })
         .attr("r",  function(d, i) { return radius; })
         .style("fill",   function(d, i) { return color(d); });
+
+    d3.select("#nodes").selectAll(".text")
+        .data(structure)
+        .enter()
+        .append("g")
+        .append("text")
+        .attr("dx", function(d, i) {return xscale(i); })
+        .attr("dy", function(d, i) {return 50 + (radius/4);})
+        .attr("text-anchor", "middle")
+        .text(function(d) {return d;});
+
 }
 
 // helper function - parses the current line into links between nodes
