@@ -1,0 +1,43 @@
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 300;
+}
+
+b {
+    font-weight: 900;
+}
+
+.outline {
+    fill: none;
+    stroke: #888888;
+    stroke-width: 1px;
+}
+
+.node {
+    stroke: #ffffff;
+    stroke-weight: 1px;
+}
+
+.link {
+    fill: none;
+    stroke: #000000;
+    stroke-weight: 10px;
+    stroke-opacity: .5;
+}
+
+.highlight {
+    stroke: red;
+    stroke-weight: 10px;
+    stroke-opacity: 1.0;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
