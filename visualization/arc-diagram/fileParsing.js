@@ -65,7 +65,7 @@ function parseStructure(text) {
     fileContents = text;
     fileFilteredComs = fileContents.split("\n"[0]);
     fileFiltered = fileFilteredComs.slice(6);
-    // console.log(fileFiltered)
+    console.log(fileFiltered)
     initializeGraphics();
 
     updateData();
@@ -111,8 +111,8 @@ function backData() {
     //energyPlot(energy);
 
     // we start at 2 because at the end of the first iteration we are at 2
-    if (currentLine > 2){
-        currentLine -= 2;
+    if (currentLine > 1){
+        currentLine -= 1;
     }
     // need some method for the last value
     console.log(currentLine)
