@@ -147,6 +147,10 @@ function drawNodes() {
 
     console.log(structure);
 
+    radius = (width - margin - 2*structure.length)/(2*structure.length);
+
+    console.log(radius);
+
     var xscale = d3.scale.linear()
         .domain([0, structure.length - 1])
         .range([radius, width - margin - radius]);
@@ -168,7 +172,7 @@ function drawNodes() {
         .append("g")
         .append("text")
         .attr("dx", function(d, i) {return xscale(i); })
-        .attr("dy", function(d, i) {return 50 + (radius/4);})
+        .attr("dy", function(d, i) {return 50 + (radius/3);})
         .attr("text-anchor", "middle")
         .text(function(d) {return d;});
 

@@ -18,6 +18,11 @@ b {
     stroke-weight: 1px;
 }
 
+#nodes  {
+  font-weight: 500;
+  font-size: 50%;
+}
+
 .link {
     fill: none;
     stroke: #000000;
