@@ -334,9 +334,10 @@ function drawGraph() {
     var margin = {top: 30, right: 20, bottom: 30, left: 20},
     width = gWidth - margin.left - margin.right,
     height = gHeight - margin.top - margin.bottom;
+    console.log(fileFiltered.length)
 
     var count = 0;
-    for (i = 2; i < fileFiltered.length; i++)
+    for (i = 2; i < fileFiltered.length-1; i++)
     {
         var point = parseFloat(fileFiltered[i].split(',')[1]);
         //FIXME - MAY NEED PARSE INT HERE
