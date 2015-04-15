@@ -23,6 +23,7 @@ var isAnimated = false;
 var saddlesOn = false;
 var selected = false;
 var noneSelectedYet = true;
+var firstBack = true;
 var minArray = [];
 var maxArray = [];
 var allText;
@@ -88,6 +89,7 @@ function initializeEnergy(){
 
 // Updates graph with next data point
 function updateData() {
+    firstBack = true;
     energy = [(fileFiltered[currentLine].split(',')[1])];
     //energyPlot(energy);
     //console.log(fileFiltered)
@@ -109,9 +111,14 @@ function updateData() {
 function backData() {
     //energy = [(fileFiltered[currentLine].split(',')[1])];
     //energyPlot(energy);
+    if (firstBack == true && currentLine > 1)
+    {
+        currentLine -= 2;
+        firstBack = false;
+    }
 
     // we start at 2 because at the end of the first iteration we are at 2
-    if (currentLine > 1){
+    else if (firstBack == false && currentLine > 1){
         currentLine -= 1;
     }
     // need some method for the last value
@@ -327,9 +334,10 @@ function drawGraph() {
     var margin = {top: 30, right: 20, bottom: 30, left: 20},
     width = gWidth - margin.left - margin.right,
     height = gHeight - margin.top - margin.bottom;
+    console.log(fileFiltered.length)
 
     var count = 0;
-    for (i = 2; i < fileFiltered.length; i++)
+    for (i = 2; i < fileFiltered.length-1; i++)
     {
         var point = parseFloat(fileFiltered[i].split(',')[1]);
         //FIXME - MAY NEED PARSE INT HERE
