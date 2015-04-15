@@ -24,16 +24,16 @@ int main (int argc, char *argv[]) {
 	int interestingNumber = 1;
 
 	if (argc == 4) {
-		if (argv[2] > 1)
+		if (stoi(argv[2]) > 1)
 			numberToFilter = atoi(argv[2]);
 		else
-			cerr << "Filtering by a number below 2 is generally not recommended as it can cause strange behavior. Setting your filtering value to 2."
+			cerr << "Filtering by a number below 2 is generally not recommended as it can cause strange behavior. Setting your filtering value to 2.";
 		interestingNumber = atoi(argv[3]);
 	} else if (argc == 3) {
-		if (argv[2] > 1)
+		if (stoi(argv[2]) > 1)
 			numberToFilter = atoi(argv[2]);
 		else
-			cerr << "Filtering by a number below 2 is generally not recommended as it can cause strange behavior. Setting your filtering value to 2."
+			cerr << "Filtering by a number below 2 is generally not recommended as it can cause strange behavior. Setting your filtering value to 2.";
 	}
 
 	string storedFileName(filename);
