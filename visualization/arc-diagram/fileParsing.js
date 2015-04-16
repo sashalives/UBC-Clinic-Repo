@@ -28,6 +28,7 @@ var minArray = [];
 var maxArray = [];
 var allText;
 var pointData = [];
+var originalIndices = [];
 
 function loadStructure(file){
     //readTextFile(file);
@@ -95,7 +96,7 @@ function updateData() {
     //console.log(fileFiltered)
     //console.log(fileFiltered[currentLine].split(',')[1])
 
-    currentEnergy.text(" Current Energy: " + energy);
+    currentEnergy.text(" Current Energy: " + energy + " at Index: " + (currentLine-2).toString() + " with Original Index: " + originalIndices[currentLine-2]);
 
     dots.style("fill","black")
         .attr("r",2)
@@ -329,7 +330,7 @@ function energyPlot(currentEnergy) {
 
 function drawGraph() {
 
-    var originalIndices = [];
+    //originalIndices = [];
 
     var margin = {top: 30, right: 20, bottom: 30, left: 20},
     width = gWidth - margin.left - margin.right,
@@ -411,7 +412,7 @@ function drawGraph() {
         .style("padding-left","20px")
         .style("padding-righ", "20px")
         .style("color","red")
-        .text(" Current Energy: " + energy);
+        .text(" Current Energy: " + energy + " with Original Index " + originalIndices[currentLine-2]);
 
     var hoverEnergy = d3.select("body")
         //.data(data)
