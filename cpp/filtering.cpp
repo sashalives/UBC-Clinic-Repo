@@ -72,7 +72,6 @@ void Filter::buildDB()
 	tempFile << _header << endl;
 	tempFile << _initialStructure << endl;
 
-	_db = {};
 	int currentLine = 0;
 
 	while (getline(_inputFile, line)) {
@@ -151,8 +150,12 @@ void Filter::filter()
 		if (structuresList.size() == 1) {
 			string finalPrefix = "remove_loops_";
 			tmpName = finalPrefix.append(_fileName);
-		} else
+		} else if (structuresList.size() == 1) {
+			copyToFinalFile(i-1);
+			break;
+		} else {
 			tmpName = "tempFile" + to_string(i);
+		}
 
 		inputFile.open(inFileName, fstream::in);
 		tempFile.open(tmpName, fstream::out);
