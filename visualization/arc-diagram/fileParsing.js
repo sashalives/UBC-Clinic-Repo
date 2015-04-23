@@ -3,8 +3,8 @@
 
 var width  = 1100;           // width of svg image
 var height = 500;           // height of svg image
-var gWidth = 1200;
-var gHeight = 400;
+var gWidth = 1200;          // width for graph
+var gHeight = 400;          // height for graph
 var margin = 20;            // amount of margin around plot area
 var pad = margin / 2;       // actual padding amount
 var radius = 20;             // fixed node radius
@@ -14,28 +14,28 @@ var currentLine = 0; // Starting index for line to access in file
 var fileContents;
 var fileFiltered;
 var structure;
-var energy;
-var currentEnergy;
-var dots;
+var energy;         //value of energy at the current line
+var currentEnergy;  // point on the graph that represents the energy at the current line
+var dots;           // set of points on the graph
 var i;
 var maxLen;
-var isAnimated = false;
-var saddlesOn = false;
-var selected = false;
-var noneSelectedYet = true;
-var firstBack = true;
-var minArray = [];
-var maxArray = [];
+var isAnimated = false; // boolean indicates if the graph is in animation mode you can't select other points
+var saddlesOn = false;  // boolean indicates if the graph has saddle points turned on, no hover over feature in this mode
+var selected = false; // boolean if you have clicked on a point it becomes selected, helpful for coloring
+var noneSelectedYet = true; // boolean indicating you have not yet made any selections in the graph
+var firstBack = true; //the first time we go back the index needs to be updated correctly 
+var minArray = [];      // values for min saddle points
+var maxArray = [];      // values for max sadddle points
 var allText;
-var pointData = [];
-var originalIndices = [];
+var pointData = [];     // values for all points 
+var originalIndices = []; //values for the original indecies assosiated with a point
 
+//loads the file text for generating diagrams
 function loadStructure(file){
-    //readTextFile(file);
     d3.text(file, parseStructure);
 }
 
-
+// generates the containers for the diagram and parses the file for ease of use
 function parseStructure(text) {
 
     var nodeContainer = d3.select("#arc-diagram")
@@ -43,19 +43,6 @@ function parseStructure(text) {
         .attr("id", "nodes")
         .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("viewBox", "0 0 1100 500");
-
-    /*var barContainer = d3.select("#energy-bar-graph")
-        .append("svg")  //svg:g???
-        .attr("id","barchart")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1300 50")
-        .style("padding-left","20px");
-    var axisContainer = d3.select("#energy-bar-graph")
-        .append("svg")  //svg:g???
-        .attr("id","axis")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1300 50")
-        .style("padding-left","20px");*/
 
     var graphContainer = d3.select("#energy-plot-graph")
         .append("svg")  //svg:g???
@@ -73,28 +60,24 @@ function parseStructure(text) {
     updateData();
 }
 
+// initialize the first image you see before updates
 function initializeGraphics() {
     drawNodes();
     initializeEnergy();
-    //energyPlot(energy);
     drawGraph();
 
 }
 
+// get the value for the first energy from the file
 function initializeEnergy(){
-    //console.log(currentLine)
     currentLine += 2;
     energy = [(fileFiltered[currentLine].split(',')[1])];
-    //console.log(energy)
 }
 
 // Updates graph with next data point
 function updateData() {
     firstBack = true;
     energy = [(fileFiltered[currentLine].split(',')[1])];
-    //energyPlot(energy);
-    //console.log(fileFiltered)
-    //console.log(fileFiltered[currentLine].split(',')[1])
 
     currentEnergy.text(" Current Energy: " + energy + " at Index: " + (currentLine-2).toString() + " with Original Index: " + originalIndices[currentLine-2]);
 
@@ -109,25 +92,21 @@ function updateData() {
     currentLine += 1;
 }
 
+// Updates graph with the previous data point 
 function backData() {
-    //energy = [(fileFiltered[currentLine].split(',')[1])];
-    //energyPlot(energy);
     if (firstBack == true && currentLine > 1)
     {
         currentLine -= 2;
         firstBack = false;
     }
 
-    // we start at 2 because at the end of the first iteration we are at 2
     else if (firstBack == false && currentLine > 1){
         currentLine -= 1;
     }
-    // need some method for the last value
-    console.log(currentLine)
 
     dots.style("fill","black")
         .attr("r",2)
-    dots.filter(function(d,i) { return i == currentLine -1 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine -1 })       
         .style("fill", "red")
         .attr("r", 5);
 
@@ -277,83 +256,30 @@ function drawLinks(links) {
         });
 }
 
-////////////////////// ENERGY PLOT CODE //////////////////////////
-/*
-function energyPlot(currentEnergy) {
-
-    //var energy = [(fileFiltered[currentLine].split(',')[1])];
-    //console.log(energy)
-    // Building the energy bar
-    //currentLine += 1;
-    //energy = [(fileFiltered[currentLine].split(',')[1])];
-    // console.log(currentEnergy)
-    
-    var min = -5  //get values from array of text 
-    var max = 5
-
-    var x = d3.scale.linear()
-    .domain([min,max])
-    .range([10, width]);
-
-    var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .ticks(20);
-
-
-    var bars = d3.select("#barchart").selectAll(".bar")
-        .data(currentEnergy)
-    
-    // enter selection    
-    bars.enter()
-        .append("rect");
-
-    // update selection
-    bars.attr("class","bar")
-        .attr ("fill","#800")
-        .attr("x", function(d, i) { return x(Math.min(0, d)); })
-        .attr("width", function(d, i) { return Math.abs(x(d) - x(0)); })
-        .attr("height", 50)
-        .text(function(d) { return d; });
-
-    // exit selection
-    bars.exit().remove();
-
-    d3.select("#axis")
-        .append("svg")
-        .attr("class", "axis")
-        .call(xAxis);
-
-} */
 
 ////////////////////// ENERGY GRAPH CODE //////////////////////////
 
 function drawGraph() {
-
-    //originalIndices = [];
 
     var margin = {top: 30, right: 20, bottom: 30, left: 20},
     width = gWidth - margin.left - margin.right,
     height = gHeight - margin.top - margin.bottom;
     console.log(fileFiltered.length)
 
+    // parsing file for energy data points and their original indecies
     var count = 0;
     for (i = 2; i < fileFiltered.length-1; i++)
     {
         var point = parseFloat(fileFiltered[i].split(',')[1]);
-        //FIXME - MAY NEED PARSE INT HERE
         var index = fileFiltered[i].split(',')[2];
         pointData.push(point);
         originalIndices.push(index);
         count += 1;
-        //console.log(data)
     }
 
     var min = d3.min(pointData);
-    // console.log(min)
 
     var max = d3.max(pointData);
-    // console.log(max)
 
     var y = d3.scale.linear()
         .domain([min,max])
@@ -380,9 +306,6 @@ function drawGraph() {
              .attr("transform", 
                 "translate(" + margin.left + "," + margin.top + ")");
 
-    //var path = graph.append("path")
-      //  .attr("class", "line")
-       // .attr("d", valueline(data));
 
     graph.append("g")
         .attr("class", "x axis")
@@ -415,42 +338,31 @@ function drawGraph() {
         .text(" Current Energy: " + energy + " with Original Index " + originalIndices[currentLine-2]);
 
     var hoverEnergy = d3.select("body")
-        //.data(data)
         .append("div")
         .attr("id","hover-energy")
-        //.style("position", "absolute")
         .style("z-index", "10")
         .style('padding-bottom', '20px')
         .style("padding-left","20px")
         .style("color", "blue");
 
-
+    // Allowes for the hover over feature and the ability to navigate to a new point
     dots.on('mouseover', function(d,i) {if (saddlesOn == false && i != currentLine-3 ){ d3.select(this).attr("r", 5).style("fill", "blue"); selected = false; return hoverEnergy.style("visibility", "visible").text("  Energy: " + d + " at Index: " + i + " with Original Index: " + originalIndices[i]);} })
-        //.on('mouseover', function(d,i) {return d3.select(this).attr("r", 5).style("fill", "blue")})
         .on('mouseout',  function(d,i) {if (saddlesOn == false && i != currentLine -3 && selected == false) {d3.select(this).attr("r", 2).style("fill", "black"); return hoverEnergy.style("visibility", "hidden");} })
-        //.on('mouseout', function(d,i) {return d3.select(this).attr("r", 2).style("fill", "black")});
-       
-        // TODO : uncomment and test
         .on('click', function(d,i) {if (isAnimated == false){ currentLine = i+2; updateData(); selected=true; noneSelectedYet=false;} if (saddlesOn == true) { showSaddlePoints(); } return; });
 
-
-
-            
-    //dots.filter(function(d,i) { return i == currentLine })        // <== This line
-      //      .style("fill", "green")
-       //     .attr("r", 5);
 
     dots.exit().remove();
 
 }
 
-
+// Loads the data for saddle points from text file
 function loadSaddlePoints(file)
 {
     readTextFile(file);
     parseSaddlePoints();
 }
 
+// Used for loading, reads the contents of the file
 function readTextFile(file)
 {
     var rawFile = new XMLHttpRequest();
@@ -462,7 +374,6 @@ function readTextFile(file)
             if(rawFile.status === 200 || rawFile.status == 0)
             {
                 allText = rawFile.responseText;
-                //alert(allText);
             }
         }
     }
@@ -471,7 +382,7 @@ function readTextFile(file)
 
 
 
-
+// parses the contents of the saddle point file into min values and max values
 function parseSaddlePoints()
 {
     var text = allText;
@@ -498,18 +409,16 @@ function parseSaddlePoints()
 
 }
 
-
-// appending tags so you can have multiple id attributes on a tag 
+// the min and max values are used as filters in order to show them visually on the graph
 function showSaddlePoints()
 {
     saddlesOn = true;
-    //parseSaddlePoints();
     console.log(minArray)
     console.log(maxArray)
     dots.style("fill","grey")
         .attr("r",2);
 
-    dots.filter(function(d,i) { return i == currentLine-3 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine-3 })     
         .style("fill", "red")
         .attr("r", 5);
 
@@ -529,12 +438,13 @@ function showSaddlePoints()
 
 }
 
+// Returns the visual to the original graph
 function hideSaddlePoints()
 {
     dots.style("fill","black")
         .attr("r",2);
 
-    dots.filter(function(d,i) { return i == currentLine-3 })        // <== This line
+    dots.filter(function(d,i) { return i == currentLine-3 })      
         .style("fill", "red")
         .attr("r", 5);
 
@@ -543,18 +453,17 @@ function hideSaddlePoints()
     console.log(selected)
 }
 
-
+// Steps through all the structures until you reach the end and updates current line
 function animateGraph()
 {
         maxLen = pointData.length-1;
-        //console.log(fileFiltered.length)
-
         i = 0;
         anim = window.setInterval(function () {if (i < maxLen){isAnimated = true; updateData();  i++;}}, 1000);
 
 
 }
 
+// Stops the animation
 function stopGraph()
 {
     i = maxLen;
